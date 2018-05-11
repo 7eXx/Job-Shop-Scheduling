@@ -13,3 +13,5 @@ un sistema di produzione è organizzato con un pool di macchine M={i1,..,im}, ci
 Si risolva il problema attraverso un algoritmo GRASP, che utilizza come intorno per la fase di ricerca locale, l’intorno proposto in “Nowicki Smutnicki, MANAGEMENT SCIENCE/VOL 40. No. 6, June 1996” (rivolgersi al docente per il file).
 
 https://developers.google.com/optimization/scheduling/job_shop
+
+https://github.com/gaulight42/jobshop
