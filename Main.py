@@ -6,7 +6,7 @@ classe per modellare l'operazione
 '''
 class Task:
 
-    def __init__(self, n, eTime, pTask, cTask):
+    def __init__(self, n, eTime, pTask=None, cTask=None):
         self.name = "task_" + str(n)
         self.machine = None
         self.executionTime = eTime
@@ -57,10 +57,12 @@ class Machine:
         # aggiornamento dei tempi
         # verifica quale è il maggiore tra
         # l'operazione sul job e sulla macchina
-        if t.pTask.finishTime < self.tasks[-1].finishTime:
-            t.startTime = self.tasks[-1].finishTime
-        else:
-            t.startTime = t.pTask.finishTime
+
+        if t.pTask is not(None) and len(self.tasks) > 0:
+            if t.pTask.finishTime < self.tasks[-1].finishTime:
+                t.startTime = self.tasks[-1].finishTime
+            else:
+                t.startTime = t.pTask.finishTime
 
         t.finishTime = t.startTime + t.executionTime
 
@@ -83,14 +85,8 @@ class Job:
 
             name = str(n) + "_" + str(i)
 
-            # verifica se aggiungere il parent
-            if i == 0:
-                pTask = None
-            else:
-                pTask = self.tasks[i - 1]
-
             # crea il task e lo aggiunge alla lista delle operazioni
-            t = Task(name, op_times[i], pTask, None)
+            t = Task(name, op_times[i])
 
             if i == 0:
                 t.startTime = 0
