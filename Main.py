@@ -51,7 +51,6 @@ class Machine:
     ## viene verificato
     def addTask (self, t):
 
-        self.tasks.append(t)
         t.setMachine(self)
 
         # aggiornamento dei tempi
@@ -64,7 +63,11 @@ class Machine:
             else:
                 t.startTime = t.pTask.finishTime
 
+        ## TODO implementare gli altri casi
+
         t.finishTime = t.startTime + t.executionTime
+
+        self.tasks.append(t)
 
 
     def __str__(self):
@@ -139,5 +142,5 @@ if __name__ == "__main__":
         job = Job(str(i),jobs_times[i])
         print(job)
 
-
+    # TODO assegnare alle macchine i task dei job e controllare il ricalcolo dei tempi
 
