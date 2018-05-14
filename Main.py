@@ -46,7 +46,8 @@ class Task:
 
     def __str__(self):
         stringa = "nome: " + self.name + "\n" +\
-                  "macchina: " + (self.machine.name if self.machine is not (None) else "(nessuna)") + "\n" +\
+                  "macchina: " + (self.machine.name if self.machine is not (None) else "(nessuna)") + "\n" + \
+                  "lavoro: " + (self.job.name if self.job is not (None) else "(nessuno)") + "\n" + \
                   "inizio: " + str(self.startTime) + "\n" +\
                   "fine: " + str(self.finishTime) + "\n" +\
                   "tempo esecuzione: " + str(self.executionTime) + "\n"
@@ -175,6 +176,9 @@ if __name__ == "__main__":
             print("Selezionata macchina = " + macchine[assegnamento_macchine[i][j]].name + " " +
                   "selezionato task = " + jobs_list[i].tasks[j].name + " " +
                   "task nella macchina al momento = " + str(len(macchine[assegnamento_macchine[i][j]].tasks)))
+
+    for m in macchine:
+        print(m)
 
     # Controllo se ogni oggetto nella lista macchine è diverso dagli altri (se non si referenzia lo stesso oggetto)
     if macchine[0] is macchine[1] or macchine[0] is macchine[2] or macchine[1] is macchine[2]:
