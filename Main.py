@@ -136,7 +136,7 @@ if __name__ == "__main__":
     macchine = []
     jobs_list = []
     for i in range(0, n_macchine):
-        macchine.append(Machine(i))
+        macchine.append(Machine(i, []))
     for i in range(0, n_jobs):
         jobs_list.append(Job(i, jobs_times[i]))
 
@@ -163,4 +163,4 @@ if __name__ == "__main__":
         print("Errore! tutte le macchine hanno gli stessi task")
     else:
         print("Tutto ok")
-    # TODO capire perchè se le macchine sono oggetti diversi hanno la stessa identica lista di tasks come dimostrato da print precedenti
+    # TODO Capire come aggiornare i tempi all'interno delle tramite ordinamento dei task
