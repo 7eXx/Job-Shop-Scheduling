@@ -7,23 +7,42 @@ classe per modellare l'operazione
 
 class Task:
 
-    def __init__(self, n, eTime, pTask=None, cTask=None):
+    def __init__(self, n, eTime, jpTask=None, jcTask=None, mpTask=None, mcTask=None):
         self.name = "task_" + str(n)
-        self.machine = None
+
         self.executionTime = eTime
         self.startTime = 0
         self.finishTime = 0
-        self.pTask = pTask
-        self.cTask = cTask
 
-    def setParent(self, task):
-        self.pTask = task
 
-    def setChildren(self, task):
-        self.cTask = task
+        ## imposta l'ordine padre e figlio sul lavoro
+        self.jpTask = jpTask
+        self.jcTask = jcTask
+        self.job = None
+
+        ## imposta l'ordine padre figlio sulla macchina
+        self.mpTask = mpTask
+        self.mcTask = mcTask
+        self.machine = None
+
+    def setJobParent(self, task):
+        self.jpTask = task
+
+    def setJobChildren(self, task):
+        self.jcTask = task
+
+    def setJob(self, job):
+        self.job = job
+
+    def setMachineParent(self, task):
+        self.mpTask = task
+
+    def setMachineChildren(self,task):
+        self.mcTask = task
 
     def setMachine(self, machine):
         self.machine = machine
+
 
     def __str__(self):
         stringa = "nome: " + self.name + "\n" +\
@@ -48,8 +67,10 @@ class Machine:
         for t in tasks:
             t.setMachine(self)
 
+        ## TODO calcolare i tempi finali
+
     ## metodo per aggiungere un task alla macchina
-    ## viene verificato
+    ## in questo modo si assegna un ordinamento alle operazioni sulla macchina
     def addTask(self, t):
 
         t.setMachine(self)
@@ -57,14 +78,13 @@ class Machine:
         # aggiornamento dei tempi
         # verifica quale è il maggiore tra
         # l'operazione sul job e sulla macchina
-
-        if t.pTask is not None and len(self.tasks) > 0:
-            if t.pTask.finishTime < self.tasks[-1].finishTime:
-                t.startTime = self.tasks[-1].finishTime
+        if len(self.tasks) > 0:
+            t.setMachineParent(self.tasks[-1])
+            if t.jpTask is not(None):
+                t.startTime = max(t.jpTask.finishTime, t.mpTask.finishTime)
             else:
-                t.startTime = t.pTask.finishTime
-
-        ## TODO implementare gli altri casi
+                t.startTime = t.mpTask.finishTime
+            t.mpTask.setMachineChildren(t)
 
         t.finishTime = t.startTime + t.executionTime
 
@@ -81,8 +101,6 @@ class Machine:
 '''
 classe per modellare il Job
 '''
-
-
 class Job:
 
     def __init__(self, n, op_times):
@@ -96,21 +114,27 @@ class Job:
             # crea il task e lo aggiunge alla lista delle operazioni
             t = Task(name, op_times[i])
 
-            # Se sto inserendo il primo task nel job calcolo i tempi
-            if i == 0:
-                t.startTime = 0
-                t.finishTime = t.startTime + t.executionTime
+            self.addTask(t)
 
-            # Se ci sono già altri task nel Job aggiorno la parentela e calcolo i tempi
-            #TODO capire se è giusto calcolare in questo momento i tempi di esecuzione o se vanno scelti quando si assegna il task alla macchina
+    def addTask(self, t):
+
+        t.setJob(self)
+
+        # aggiornamento dei tempi
+        # verifica quale è il maggiore tra
+        # l'operazione sul job e sulla macchina
+        if len(self.tasks) > 0:
+            t.setJobParent(self.tasks[-1])
+            if t.mpTask is not(None):
+                t.startTime = max(t.jpTask.finishTime, t.mpTask.finishTime)
             else:
-                t.setParent(self.tasks[-1])
-                self.tasks[-1].setChildren(t)
-                t.startTime = self.tasks[-1].finishTime
-                t.finishTime = t.startTime + t.executionTime
+                t.startTime = t.jpTask.finishTime
+            t.jpTask.setJobChildren(t)
 
-            # Aggiungo il task appena creato alla lista del task del Job
-            self.tasks.append(t)
+        t.finishTime = t.startTime + t.executionTime
+
+        self.tasks.append(t)
+
 
     def __str__(self):
         stringa = self.name + "\n"
@@ -136,7 +160,7 @@ if __name__ == "__main__":
     macchine = []
     jobs_list = []
     for i in range(0, n_macchine):
-        macchine.append(Machine(i))
+        macchine.append(Machine(i,[]))
     for i in range(0, n_jobs):
         jobs_list.append(Job(i, jobs_times[i]))
 
