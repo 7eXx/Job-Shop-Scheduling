@@ -8,6 +8,7 @@ classe per modellare l'operazione
 class Task:
 
     def __init__(self, n, eTime, jpTask=None, jcTask=None, mpTask=None, mcTask=None):
+
         self.name = "task_" + str(n)
 
         self.executionTime = eTime
@@ -48,6 +49,10 @@ class Task:
         stringa = "nome: " + self.name + "\n" +\
                   "macchina: " + (self.machine.name if self.machine is not (None) else "(nessuna)") + "\n" + \
                   "lavoro: " + (self.job.name if self.job is not (None) else "(nessuno)") + "\n" + \
+                  "task job precedente: " + (self.jpTask.name if self.jpTask is not None else "(nessuno)") +  "\n" + \
+                  "task macchina precedente: " + (self.mpTask.name if self.mpTask is not None else "(nessuno)") + "\n" + \
+                  "task job successivo: " + (self.jcTask.name if self.jcTask is not None else "(nessuno)") + "\n" + \
+                  "task macchina successivo: " + (self.mcTask.name if self.mcTask is not None else "(nessuno)") + "\n" + \
                   "inizio: " + str(self.startTime) + "\n" +\
                   "fine: " + str(self.finishTime) + "\n" +\
                   "tempo esecuzione: " + str(self.executionTime) + "\n"
@@ -91,6 +96,34 @@ class Machine:
 
         self.tasks.append(t)
 
+    def addSimpleTask(self,t):
+
+        t.setMachine(self)
+
+        if len(self.tasks) > 0:
+            t.setMachineParent(self.tasks[-1])
+            self.tasks[-1].setMachineChildren(t)
+
+        self.tasks.append(t)
+
+
+    def sortTaskShorterToLonger(self):
+
+        self.tasks.sort(key=lambda task: task.executionTime,reverse=True)
+
+        # aggiornamento dei riferimenti ai nodi
+        for i in range(0, len(self.tasks)):
+            ## imposta il genitore
+            if i > 0:
+                self.tasks[i].setMachineParent(self.tasks[i-1])
+            else:
+                self.tasks[i].setMachineParent(None)
+            ## imposta il figlio
+            if i+1 < len(self.tasks):
+                self.tasks[i].setMachineChildren(self.tasks[i+1])
+            else:
+                self.tasks[i].setMachineChildren(None)
+
     def __str__(self):
         stringa = self.name + "\n"
         for t in self.tasks:
@@ -110,12 +143,13 @@ class Job:
 
         # Per ogni tempo inserito devo creare un task
         for i in range(len(op_times)):
-            name = str(n) + "_" + str(i)
+            name = str(n) + "_" + str(i+1)
 
             # crea il task e lo aggiunge alla lista delle operazioni
             t = Task(name, op_times[i])
 
-            self.addTask(t)
+            self.addSimpleTask(t)
+
 
     def addTask(self, t):
 
@@ -133,6 +167,16 @@ class Job:
             t.jpTask.setJobChildren(t)
 
         t.finishTime = t.startTime + t.executionTime
+
+        self.tasks.append(t)
+
+    def addSimpleTask(self, t):
+
+        t.setJob(self)
+
+        if len(self.tasks) > 0:
+            t.setJobParent(self.tasks[-1])
+            self.tasks[-1].setJobChildren(t)
 
         self.tasks.append(t)
 
@@ -160,35 +204,28 @@ if __name__ == "__main__":
     # Inizializzazione delle strutture dati
     macchine = []
     jobs_list = []
-    for i in range(0, n_macchine):
-        macchine.append(Machine(i,[]))
+
+    ## creazione dei JOB
     for i in range(0, n_jobs):
         jobs_list.append(Job(i, jobs_times[i]))
+        # print del job
+        # print(jobs_list[i])
 
-    ''''# Stampa di prova
-    for job in jobs_list:
-        print(job)'''
+    ## creazione delle macchine
+    for i in range(0, n_macchine):
+        macchine.append(Machine(i,[]))
 
-    # Inserimento dei task dei Job nelle varie macchine secondo l'assegnamento impostato
-    for i in range(0, n_jobs):
-        for j in range(0, len(assegnamento_macchine[i])):
-            macchine[assegnamento_macchine[i][j]].addTask(jobs_list[i].tasks[j])
-            print("Selezionata macchina = " + macchine[assegnamento_macchine[i][j]].name + " " +
-                  "selezionato task = " + jobs_list[i].tasks[j].name + " " +
-                  "task nella macchina al momento = " + str(len(macchine[assegnamento_macchine[i][j]].tasks)))
+    ## assegnamento dei task alle macchine secondo il vettore
+    for j in range(0,len(jobs_list)):
+        for i in range(0,len(jobs_list[j].tasks)):
+            ## assegnazionio dei job alle macchine in relazione al vettore di assegnamento
+            macchine[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
+
+    #for m in macchine:
+    #    print(m)
+
+    for m in macchine:
+        m.sortTaskShorterToLonger()
 
     for m in macchine:
         print(m)
-
-    # Controllo se ogni oggetto nella lista macchine è diverso dagli altri (se non si referenzia lo stesso oggetto)
-    if macchine[0] is macchine[1] or macchine[0] is macchine[2] or macchine[1] is macchine[2]:
-        print("Errore! gli oggetti nella lista macchine sono gli sessi")
-    else:
-        print("Gli oggetti sono diversi, OK!")
-
-    # Controllo se la lista dei task è diversa per ogni macchina (devono essere diverse)
-    if set(macchine[0].tasks) == set(macchine[1].tasks) == set(macchine[2].tasks):
-        print("Errore! tutte le macchine hanno gli stessi task")
-    else:
-        print("Tutto ok")
-    # TODO capire perchè se le macchine sono oggetti diversi hanno la stessa identica lista di tasks come dimostrato da print precedenti
