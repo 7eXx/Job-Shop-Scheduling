@@ -47,8 +47,8 @@ class Task:
                   "macchina: " + (self.machine.name if self.machine is not (None) else "(nessuna)") + "\n" + \
                   "lavoro: " + (self.job.name if self.job is not (None) else "(nessuno)") + "\n" + \
                   "task job precedente: " + (self.jpTask.name if self.jpTask is not None else "(nessuno)") +  "\n" + \
-                  "task macchina precedente: " + (self.mpTask.name if self.mpTask is not None else "(nessuno)") + "\n" + \
                   "task job successivo: " + (self.jcTask.name if self.jcTask is not None else "(nessuno)") + "\n" + \
+                  "task macchina precedente: " + (self.mpTask.name if self.mpTask is not None else "(nessuno)") + "\n" + \
                   "task macchina successivo: " + (self.mcTask.name if self.mcTask is not None else "(nessuno)") + "\n" + \
                   "inizio: " + str(self.startTime) + "\n" +\
                   "fine: " + str(self.finishTime) + "\n" +\
@@ -103,23 +103,35 @@ class Machine:
 
         self.tasks.append(t)
 
+    def exchangeOrder(self, t_1, t_2):
+
+        t_1_index = self.tasks.index(t_1)
+        t_2_index = self.tasks.index(t_2)
+
+        self.tasks[t_1_index], self.tasks[t_2_index] = self.tasks[t_2_index], self.tasks[t_1_index]
+        self.updateRefTasks()
+
+
+    def updateRefTasks(self):
+        # aggiornamento dei riferimenti ai nodi
+        for i in range(0, len(self.tasks)):
+            ## imposta il genitore
+            if i > 0:
+                self.tasks[i].setMachineParent(self.tasks[i - 1])
+            else:
+                self.tasks[i].setMachineParent(None)
+            ## imposta il figlio
+            if i + 1 < len(self.tasks):
+                self.tasks[i].setMachineChildren(self.tasks[i + 1])
+            else:
+                self.tasks[i].setMachineChildren(None)
 
     def sortTaskShorterToLonger(self):
 
         self.tasks.sort(key=lambda task: task.executionTime,reverse=True)
 
-        # aggiornamento dei riferimenti ai nodi
-        for i in range(0, len(self.tasks)):
-            ## imposta il genitore
-            if i > 0:
-                self.tasks[i].setMachineParent(self.tasks[i-1])
-            else:
-                self.tasks[i].setMachineParent(None)
-            ## imposta il figlio
-            if i+1 < len(self.tasks):
-                self.tasks[i].setMachineChildren(self.tasks[i+1])
-            else:
-                self.tasks[i].setMachineChildren(None)
+        ## aggiornamento riferimenti task
+        self.updateRefTasks()
 
     def __str__(self):
         stringa = self.name + "\n"
@@ -146,7 +158,6 @@ class Job:
             t = Task(name, op_times[i])
 
             self.addSimpleTask(t)
-
 
     def addTask(self, t):
 
@@ -186,27 +197,45 @@ class Job:
         return stringa
 
 
-## questo metodo identifica il loop e ritorna il percorso che è chiuso
+## questo metodo identifica il loop
+## ritorna una lista ciclica che forma il loop
 def loopDetenction(node, visited=[]):
     if node in visited:
+        # trova l'indice dell'elemento gia' analizzato
+        index = visited.index(node)
+        # elimina tutti quelli precedenti che non stanno nel ciclo
+        visited = visited[index:]
         return (True, visited)
     else:
         visited.append(node)
-
+        # verifica il task successivo del job
         if node.jcTask is not None:
             return loopDetenction(node.jcTask, visited)
-
+        # verifica il task successivo della macchina
         if node.mcTask is not None:
             return loopDetenction(node.mcTask, visited)
 
         return (False, visited)
 
+## questo metodo elimina il loop dal percorso
+## attraverso l'inversione di un arco che collega
+## due task nella stessa macchina
+def deleteLoop(loop_path, exchanged_set):
 
-def deleteLoop(loop_path):
+    for i in range(0, len(loop_path)):
+        ## verifica che i due task appartengano alla stessa macchina
+        ## allora si possono invertire
+        node_1 = loop_path[i]
+        node_2 = loop_path[(i+1)%len(loop_path)]
 
-    for t in loop_path:
-        None
+        if node_1.machine == node_2.machine and (node_1, node_2) not in exchanged_set and (node_2, node_1) not in exchanged_set:
 
+            node_1.machine.exchangeOrder(node_1, node_2)
+            ## aggiunge i nodi all'insieme di quelli già scambiati per non riscambiarli
+            exchanged_set.add((node_1, node_2))
+            exchanged_set.add((node_2, node_1))
+
+            break
 
 
 
@@ -248,32 +277,38 @@ if __name__ == "__main__":
     for m in macchine:
         m.sortTaskShorterToLonger()
 
+    print ("situazione attuale macchine")
     for m in macchine:
         print(m)
 
     ## seguenti righe di codice cercano i loop
     ## e se ci sono cercano di eliminarli
-
     loop = True
-
+    ## l'insisme degli scambi già eseguiti per non eseguire ancora gli stessi scambi
+    exchanged_set = set()
     while loop:
 
         c_cycle = False
         ## ciclo che partendo dai task dei primi job trova eventuali cicli
-        for j in jobs_list and not(c_cycle):
+        for j in jobs_list:
             visited = []
-            ## controlla che il primo task del job non abbia precedenti nelle macchine
-            if j.tasks[0].mpTask is None:
-                (c_cycle, visited) = loopDetenction(j.tasks[0], visited)
+            ## partendo dal primo task di ogni job verifica se generano loop
+            (c_cycle, visited) = loopDetenction(j.tasks[0], visited)
+            if c_cycle:
+                break
 
         if c_cycle:
-            print("ciclo trovato")
-            deleteLoop(visited)
+            print("ciclo trovato \n")
+            deleteLoop(visited, exchanged_set)
 
         else:
             loop = False
-            print("nessun ciclo trovato")
+            print("nessun ciclo trovato \n")
 
+
+    print("situazione finale macchine sistemate")
+    for j in jobs_list:
+        print(j)
 
 
 
