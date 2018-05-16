@@ -126,7 +126,7 @@ class Machine:
             else:
                 self.tasks[i].setMachineChildren(None)
 
-    def sortTaskShorterToLonger(self):
+    def shortestTaskFirst(self):
 
         self.tasks.sort(key=lambda task: task.executionTime,reverse=True)
 
@@ -234,8 +234,103 @@ def deleteLoop(loop_path, exchanged_set):
             ## aggiunge i nodi all'insieme di quelli già scambiati per non riscambiarli
             exchanged_set.add((node_1, node_2))
             exchanged_set.add((node_2, node_1))
-
             break
+
+def enumerateNode(node):
+
+    prev_task_machine = node.mpTask
+    prev_task_job = node.jpTask
+
+    if prev_task_machine is not None and prev_task_job is not None:
+        node.startTime = max(prev_task_machine.finishTime, prev_task_job.finishTime)
+
+    elif prev_task_machine is not None:
+        node.startTime = prev_task_machine.finishTime
+
+    elif prev_task_job is not None:
+        node.startTime = prev_task_job.finishTime
+
+    node.finishTime = node.startTime + node.executionTime
+
+    if node.mcTask is not None:
+        enumerateNode(node.mcTask)
+
+    if node.jcTask is not None:
+        enumerateNode(node.jcTask)
+
+## funzione che date le macchine
+## calcola i task con make span maggiore
+## che sono schedulati per ultimi
+def lastestTask(machines):
+
+    last_task_machines = []
+    for m in machines:
+        last_task_machines.append(m.tasks[-1])
+
+    max_task = max(last_task_machines, key=lambda m: m.finishTime)
+
+    ## verifica se ci sono piu' task che hanno durata uguale al max
+    max_tasks = []
+    for t in last_task_machines:
+        if t.finishTime == max_task.finishTime:
+            max_tasks.append(t)
+
+    return max_tasks
+
+
+## metodo che dai/dal task ritorna i critical path
+## da una lista di tasks che hanno makespan maggiore
+def allCriticalPaths(tasks):
+
+    all_critical_path = []
+    for t in tasks:
+        ## torna tutti i percorsi critici associati a un task con schema [[]]
+        multiple_critical_paths = multipleCriticalPath(t, [[]])
+        ## per tutti i percorsi critici del task li associa a una nuova lista
+        for multi_paths in multiple_critical_paths:
+            all_critical_path.append(multi_paths)
+
+    ## struttura del tipo [[crit_path_1],[crit_path_2]] ecc
+    return all_critical_path
+
+def multipleCriticalPath(node, multiple_paths=[[]]):
+
+    prev_task_machine = node.mpTask
+    prev_task_job = node.jpTask
+
+    if prev_task_machine is not None and prev_task_job is not None:
+
+        if prev_task_machine.finishTime == prev_task_job.finishTime:
+
+            multiple_paths.append([node])
+            return multipleCriticalPath(prev_task_machine, multiple_paths)
+
+            multiple_paths.append([node])
+            return multipleCriticalPath(prev_task_job, multiple_paths)
+
+        if prev_task_machine.finishTime > prev_task_job.finishTime:
+
+            multiple_paths[0].append(node)
+            return multipleCriticalPath(prev_task_machine, multiple_paths)
+
+        elif prev_task_machine.finishTime < prev_task_job.finishTime:
+
+            multiple_paths[0].append(node)
+            return multipleCriticalPath(prev_task_job, multiple_paths)
+
+    elif prev_task_machine is not None:
+        multiple_paths[0].append(node)
+        return multipleCriticalPath(prev_task_machine, multiple_paths)
+
+    elif prev_task_job is not None:
+        multiple_paths[0].append(node)
+        return multipleCriticalPath(prev_task_job, multiple_paths)
+
+    else:
+        multiple_paths[0].append(node)
+        return multiple_paths
+
+
 
 
 
@@ -271,11 +366,11 @@ if __name__ == "__main__":
             ## assegnazionio dei job alle macchine in relazione al vettore di assegnamento
             macchine[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
 
-    #for m in macchine:
-    #    print(m)
+    for m in macchine:
+        print(m)
 
     for m in macchine:
-        m.sortTaskShorterToLonger()
+        m.shortestTaskFirst()
 
     print ("situazione attuale macchine")
     for m in macchine:
@@ -292,7 +387,7 @@ if __name__ == "__main__":
         ## ciclo che partendo dai task dei primi job trova eventuali cicli
         for j in jobs_list:
             visited = []
-            ## partendo dal primo task di ogni job verifica se generano loop
+            ## partendo dal primo task di ogni job verifica se generano loop\
             (c_cycle, visited) = loopDetenction(j.tasks[0], visited)
             if c_cycle:
                 break
@@ -311,4 +406,30 @@ if __name__ == "__main__":
         print(j)
 
 
+    ## aggiornamento etichette nodi, starting time e finishtime
+    for m in macchine:
+        enumerateNode(m.tasks[0])
+
+    print("assegnamento start time task: \n")
+    for m in macchine:
+        print(m)
+
+
+    # calcola il makespan recuperandolo dagli ultimi task delle macchine
+    lastes_tasks = lastestTask(macchine)
+    print("i tasks con maggiore makespan sono: \n")
+    for t in lastes_tasks:
+        print(t)
+
+    ## ritorna una lista contente tutti i percorsi critici possibili
+    all_critical_paths = allCriticalPaths(lastes_tasks)
+
+    print("ecco tutti i percorsi critici: \n")
+    for crit_path in all_critical_paths:
+        for task in crit_path:
+            print(task)
+
+    ## ora dai percorsi critici si puo' lavorare con l'algoritmo di Nowicki
+
+    print("finito")
 
