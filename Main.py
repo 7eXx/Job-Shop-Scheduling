@@ -1,10 +1,7 @@
 import sys
-
 '''
 classe per modellare l'operazione
 '''
-
-
 class Task:
 
     def __init__(self, n, eTime, jpTask=None, jcTask=None, mpTask=None, mcTask=None):
@@ -189,6 +186,30 @@ class Job:
         return stringa
 
 
+## questo metodo identifica il loop e ritorna il percorso che è chiuso
+def loopDetenction(node, visited=[]):
+    if node in visited:
+        return (True, visited)
+    else:
+        visited.append(node)
+
+        if node.jcTask is not None:
+            return loopDetenction(node.jcTask, visited)
+
+        if node.mcTask is not None:
+            return loopDetenction(node.mcTask, visited)
+
+        return (False, visited)
+
+
+def deleteLoop(loop_path):
+
+    for t in loop_path:
+        None
+
+
+
+
 if __name__ == "__main__":
 
     # Parametri di default
@@ -229,3 +250,30 @@ if __name__ == "__main__":
 
     for m in macchine:
         print(m)
+
+    ## seguenti righe di codice cercano i loop
+    ## e se ci sono cercano di eliminarli
+
+    loop = True
+
+    while loop:
+
+        c_cycle = False
+        ## ciclo che partendo dai task dei primi job trova eventuali cicli
+        for j in jobs_list and not(c_cycle):
+            visited = []
+            ## controlla che il primo task del job non abbia precedenti nelle macchine
+            if j.tasks[0].mpTask is None:
+                (c_cycle, visited) = loopDetenction(j.tasks[0], visited)
+
+        if c_cycle:
+            print("ciclo trovato")
+            deleteLoop(visited)
+
+        else:
+            loop = False
+            print("nessun ciclo trovato")
+
+
+
+
