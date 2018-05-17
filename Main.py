@@ -282,16 +282,20 @@ def lastestTask(machines):
 ## da una lista di tasks che hanno makespan maggiore
 def allCriticalPaths(tasks):
 
-    all_critical_path = []
+    all_critical_paths = []
     for t in tasks:
         ## torna tutti i percorsi critici associati a un task con schema [[]]
         multiple_critical_paths = multipleCriticalPath(t, [[]])
         ## per tutti i percorsi critici del task li associa a una nuova lista
         for multi_paths in multiple_critical_paths:
-            all_critical_path.append(multi_paths)
+            all_critical_paths.append(multi_paths)
 
     ## struttura del tipo [[crit_path_1],[crit_path_2]] ecc
-    return all_critical_path
+    ## raddrizza tutti i critical path
+    for crit_path in all_critical_paths:
+        crit_path.reverse()
+
+    return all_critical_paths
 
 def multipleCriticalPath(node, multiple_paths=[[]]):
 
@@ -330,9 +334,25 @@ def multipleCriticalPath(node, multiple_paths=[[]]):
         multiple_paths[0].append(node)
         return multiple_paths
 
+## questo metodo dal critical path restituisce
+## una lista di blocchi: dimensione massima per ogni macchina
+## (per maggiori dettagli vedere teoria)
+def buildBlocks(critical_path):
 
+    blocks = []
+    prev_task = None
+    for task in crit_path:
 
+        ## verifica se il task precedente della macchina è nullo
+        if task.mpTask is None or task.machine != prev_task.machine:
+            blocks.append([task])
 
+        else:
+            blocks[-1].append(task)
+
+        prev_task = task
+
+    return blocks
 
 if __name__ == "__main__":
 
@@ -430,6 +450,23 @@ if __name__ == "__main__":
             print(task)
 
     ## ora dai percorsi critici si puo' lavorare con l'algoritmo di Nowicki
+    ## quindi costruzione dei blocchi
+    all_blocks_path = []
+    for crit_path in all_critical_paths:
+        all_blocks_path.append(buildBlocks(crit_path))
+
+    ## print di tutti i blocci
+    for block_path in all_blocks_path:
+        print("[", end="")
+        for blocks in block_path:
+            print("[ ", end="")
+            for task in blocks:
+                print(task.name + " ", end="")
+            print("]", end="")
+
+        print("]\n")
+
+
 
     print("finito")
 
