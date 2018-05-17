@@ -1,145 +1,8 @@
 import sys
-'''
-classe per modellare l'operazione
-'''
-class Task:
-
-    def __init__(self, n, eTime, jpTask=None, jcTask=None, mpTask=None, mcTask=None):
-
-        self.name = "task_" + str(n)
-
-        self.executionTime = eTime
-        self.startTime = 0
-        self.finishTime = 0
-
-
-        ## imposta l'ordine padre e figlio sul lavoro
-        self.jpTask = jpTask
-        self.jcTask = jcTask
-        self.job = None
-
-        ## imposta l'ordine padre figlio sulla macchina
-        self.mpTask = mpTask
-        self.mcTask = mcTask
-        self.machine = None
-
-    def setJobParent(self, task):
-        self.jpTask = task
-
-    def setJobChildren(self, task):
-        self.jcTask = task
-
-    def setJob(self, job):
-        self.job = job
-
-    def setMachineParent(self, task):
-        self.mpTask = task
-
-    def setMachineChildren(self,task):
-        self.mcTask = task
-
-    def setMachine(self, machine):
-        self.machine = machine
-
-
-    def __str__(self):
-        stringa = "nome: " + self.name + "\n" +\
-                  "macchina: " + (self.machine.name if self.machine is not (None) else "(nessuna)") + "\n" + \
-                  "lavoro: " + (self.job.name if self.job is not (None) else "(nessuno)") + "\n" + \
-                  "task job precedente: " + (self.jpTask.name if self.jpTask is not None else "(nessuno)") +  "\n" + \
-                  "task job successivo: " + (self.jcTask.name if self.jcTask is not None else "(nessuno)") + "\n" + \
-                  "task macchina precedente: " + (self.mpTask.name if self.mpTask is not None else "(nessuno)") + "\n" + \
-                  "task macchina successivo: " + (self.mcTask.name if self.mcTask is not None else "(nessuno)") + "\n" + \
-                  "inizio: " + str(self.startTime) + "\n" +\
-                  "fine: " + str(self.finishTime) + "\n" +\
-                  "tempo esecuzione: " + str(self.executionTime) + "\n"
-        return stringa
-
-
-'''
-classe per modellare la macchina
-'''
-
-
-class Machine:
-
-    def __init__(self, n, tasks=[]):
-        self.name = "Machine_" + str(n)
-        self.tasks = tasks
-
-        for t in tasks:
-            t.setMachine(self)
-
-        ## TODO calcolare i tempi finali
-
-    ## metodo per aggiungere un task alla macchina
-    ## in questo modo si assegna un ordinamento alle operazioni sulla macchina
-    def addTask(self, t):
-
-        t.setMachine(self)
-
-        # aggiornamento dei tempi
-        # verifica quale è il maggiore tra
-        # l'operazione sul job e sulla macchina
-        if len(self.tasks) > 0:
-            t.setMachineParent(self.tasks[-1])
-            if t.jpTask is not(None):
-                t.startTime = max(t.jpTask.finishTime, t.mpTask.finishTime)
-            else:
-                t.startTime = t.mpTask.finishTime
-            t.mpTask.setMachineChildren(t)
-
-        t.finishTime = t.startTime + t.executionTime
-
-        self.tasks.append(t)
-
-    def addSimpleTask(self,t):
-
-        t.setMachine(self)
-
-        if len(self.tasks) > 0:
-            t.setMachineParent(self.tasks[-1])
-            self.tasks[-1].setMachineChildren(t)
-
-        self.tasks.append(t)
-
-    def exchangeOrder(self, t_1, t_2):
-
-        t_1_index = self.tasks.index(t_1)
-        t_2_index = self.tasks.index(t_2)
-
-        self.tasks[t_1_index], self.tasks[t_2_index] = self.tasks[t_2_index], self.tasks[t_1_index]
-        self.updateRefTasks()
-
-
-    def updateRefTasks(self):
-        # aggiornamento dei riferimenti ai nodi
-        for i in range(0, len(self.tasks)):
-            ## imposta il genitore
-            if i > 0:
-                self.tasks[i].setMachineParent(self.tasks[i - 1])
-            else:
-                self.tasks[i].setMachineParent(None)
-            ## imposta il figlio
-            if i + 1 < len(self.tasks):
-                self.tasks[i].setMachineChildren(self.tasks[i + 1])
-            else:
-                self.tasks[i].setMachineChildren(None)
-
-    def shortestTaskFirst(self):
-
-        self.tasks.sort(key=lambda task: task.executionTime,reverse=True)
-
-        ## aggiornamento riferimenti task
-        self.updateRefTasks()
-
-    def __str__(self):
-        stringa = self.name + "\n"
-        for t in self.tasks:
-            stringa += str(t) + "\n"
-
-        return stringa
-
+from Neighborhood import *
+from MoveSet import *
+from Task import *
+from Util import *
 
 '''
 classe per modellare il Job
@@ -197,66 +60,42 @@ class Job:
         return stringa
 
 
-## questo metodo identifica il loop
-## ritorna una lista ciclica che forma il loop
-def loopDetenction(node, visited=[]):
-    if node in visited:
-        # trova l'indice dell'elemento gia' analizzato
-        index = visited.index(node)
-        # elimina tutti quelli precedenti che non stanno nel ciclo
-        visited = visited[index:]
-        return (True, visited)
-    else:
-        visited.append(node)
-        # verifica il task successivo del job
-        if node.jcTask is not None:
-            return loopDetenction(node.jcTask, visited)
-        # verifica il task successivo della macchina
-        if node.mcTask is not None:
-            return loopDetenction(node.mcTask, visited)
+class BlockSet:
 
-        return (False, visited)
+    def __init__(self, critical_path):
 
-## questo metodo elimina il loop dal percorso
-## attraverso l'inversione di un arco che collega
-## due task nella stessa macchina
-def deleteLoop(loop_path, exchanged_set):
+        self.block_set = self.buildBlocks(critical_path)
 
-    for i in range(0, len(loop_path)):
-        ## verifica che i due task appartengano alla stessa macchina
-        ## allora si possono invertire
-        node_1 = loop_path[i]
-        node_2 = loop_path[(i+1)%len(loop_path)]
+    ## questo metodo dal critical path restituisce
+    ## una lista di blocchi: dimensione massima per ogni macchina
+    ## (per maggiori dettagli vedere teoria)
+    def buildBlocks(self, critical_path):
 
-        if node_1.machine == node_2.machine and (node_1, node_2) not in exchanged_set and (node_2, node_1) not in exchanged_set:
+        blocks = []
+        prev_task = None
+        for task in crit_path:
 
-            node_1.machine.exchangeOrder(node_1, node_2)
-            ## aggiunge i nodi all'insieme di quelli già scambiati per non riscambiarli
-            exchanged_set.add((node_1, node_2))
-            exchanged_set.add((node_2, node_1))
-            break
+            ## verifica se il task precedente della macchina è nullo
+            if task.mpTask is None or task.machine != prev_task.machine:
+                blocks.append([task])
 
-def enumerateNode(node):
+            else:
+                blocks[-1].append(task)
 
-    prev_task_machine = node.mpTask
-    prev_task_job = node.jpTask
+            prev_task = task
 
-    if prev_task_machine is not None and prev_task_job is not None:
-        node.startTime = max(prev_task_machine.finishTime, prev_task_job.finishTime)
+        return blocks
 
-    elif prev_task_machine is not None:
-        node.startTime = prev_task_machine.finishTime
+    def __str__(self):
+        stringa = "["
+        for blocks in self.block_set:
+            stringa += "[ "
+            for task in blocks:
+                stringa += task.name + " "
+            stringa += "]"
 
-    elif prev_task_job is not None:
-        node.startTime = prev_task_job.finishTime
-
-    node.finishTime = node.startTime + node.executionTime
-
-    if node.mcTask is not None:
-        enumerateNode(node.mcTask)
-
-    if node.jcTask is not None:
-        enumerateNode(node.jcTask)
+        stringa += "]"
+        return stringa
 
 ## funzione che date le macchine
 ## calcola i task con make span maggiore
@@ -334,25 +173,6 @@ def multipleCriticalPath(node, multiple_paths=[[]]):
         multiple_paths[0].append(node)
         return multiple_paths
 
-## questo metodo dal critical path restituisce
-## una lista di blocchi: dimensione massima per ogni macchina
-## (per maggiori dettagli vedere teoria)
-def buildBlocks(critical_path):
-
-    blocks = []
-    prev_task = None
-    for task in crit_path:
-
-        ## verifica se il task precedente della macchina è nullo
-        if task.mpTask is None or task.machine != prev_task.machine:
-            blocks.append([task])
-
-        else:
-            blocks[-1].append(task)
-
-        prev_task = task
-
-    return blocks
 
 if __name__ == "__main__":
 
@@ -367,7 +187,7 @@ if __name__ == "__main__":
                              [1, 2]]
 
     # Inizializzazione delle strutture dati
-    macchine = []
+    machines = []
     jobs_list = []
 
     ## creazione dei JOB
@@ -378,95 +198,88 @@ if __name__ == "__main__":
 
     ## creazione delle macchine
     for i in range(0, n_macchine):
-        macchine.append(Machine(i,[]))
+        machines.append(Machine(i, []))
 
     ## assegnamento dei task alle macchine secondo il vettore
     for j in range(0,len(jobs_list)):
         for i in range(0,len(jobs_list[j].tasks)):
             ## assegnazionio dei job alle macchine in relazione al vettore di assegnamento
-            macchine[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
+            machines[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
 
-    for m in macchine:
+    for m in machines:
         print(m)
 
-    for m in macchine:
+    for m in machines:
         m.shortestTaskFirst()
 
-    print ("situazione attuale macchine")
-    for m in macchine:
+    print ("-- situazione attuale macchine")
+    for m in machines:
         print(m)
 
-    ## seguenti righe di codice cercano i loop
-    ## e se ci sono cercano di eliminarli
-    loop = True
-    ## l'insisme degli scambi già eseguiti per non eseguire ancora gli stessi scambi
-    exchanged_set = set()
-    while loop:
+    analyzeDeleteLoop(machines)
 
-        c_cycle = False
-        ## ciclo che partendo dai task dei primi job trova eventuali cicli
-        for j in jobs_list:
-            visited = []
-            ## partendo dal primo task di ogni job verifica se generano loop\
-            (c_cycle, visited) = loopDetenction(j.tasks[0], visited)
-            if c_cycle:
-                break
-
-        if c_cycle:
-            print("ciclo trovato \n")
-            deleteLoop(visited, exchanged_set)
-
-        else:
-            loop = False
-            print("nessun ciclo trovato \n")
-
-
-    print("situazione finale macchine sistemate")
+    print("-- situazione finale macchine sistemate")
     for j in jobs_list:
         print(j)
 
+    ## esegue aggiornamento nodi
+    enumerateGraph(machines)
 
-    ## aggiornamento etichette nodi, starting time e finishtime
-    for m in macchine:
-        enumerateNode(m.tasks[0])
-
-    print("assegnamento start time task: \n")
-    for m in macchine:
+    print("-- assegnamento start time task: \n")
+    for m in machines:
         print(m)
 
 
     # calcola il makespan recuperandolo dagli ultimi task delle macchine
-    lastes_tasks = lastestTask(macchine)
-    print("i tasks con maggiore makespan sono: \n")
+    lastes_tasks = lastestTask(machines)
+    print("-- i tasks con maggiore makespan sono: \n")
     for t in lastes_tasks:
         print(t)
 
     ## ritorna una lista contente tutti i percorsi critici possibili
     all_critical_paths = allCriticalPaths(lastes_tasks)
 
-    print("ecco tutti i percorsi critici: \n")
+    print("-- ecco tutti i percorsi critici:")
+    print("[", end="")
     for crit_path in all_critical_paths:
+        print("[ ", end="")
         for task in crit_path:
-            print(task)
+            print(task.name + " ", end="")
+        print("]", end="")
+    print("]\n")
 
     ## ora dai percorsi critici si puo' lavorare con l'algoritmo di Nowicki
-    ## quindi costruzione dei blocchi
-    all_blocks_path = []
+    ## quindi costruzione dei blocchi in cui ogni task appartiene a una macchina
+    ## struttura dal tipo [[[blocco_1_path_1][blocco_2_path_1]...], [[blocco_1_path_2][blocco_2_path_2]...]...]
+    all_blocks_sets = []
     for crit_path in all_critical_paths:
-        all_blocks_path.append(buildBlocks(crit_path))
+        all_blocks_sets.append(BlockSet(crit_path))
 
-    ## print di tutti i blocci
-    for block_path in all_blocks_path:
-        print("[", end="")
-        for blocks in block_path:
-            print("[ ", end="")
-            for task in blocks:
-                print(task.name + " ", end="")
-            print("]", end="")
-
-        print("]\n")
+    print("-- tutti i blocchi")
+    ## print di tutti i blocchi
+    for block_set in all_blocks_sets:
+        print(block_set)
 
 
+    ## costruzione del MoveSet per i blocchi
+    move_sets = []
+    for block_set in all_blocks_sets:
+        move_set = MoveSet(block_set)
+        move_sets.append(move_set)
+
+    print("-- ecco i move_sets:")
+    for move_set in move_sets:
+        print(move_set)
+
+
+    ## per tutti i move_set genera il neighborhood
+    neighborhood = Neighborhood()
+    for move_set in move_sets:
+        for moves in move_set.move_set:
+            if len(moves) > 0:
+                for move in moves:
+                    neighbor = Neighbor(machines, move)
+                    neighborhood.addNeighbor(neighbor)
 
     print("finito")
 
