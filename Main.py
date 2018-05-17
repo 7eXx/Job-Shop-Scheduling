@@ -189,8 +189,7 @@ if __name__ == "__main__":
     # Inizializzazione delle strutture dati
     machines = []
     jobs_list = []
-
-    ## creazione dei JOB
+    
     for i in range(0, n_jobs):
         jobs_list.append(Job(i, jobs_times[i]))
         # print del job
@@ -282,4 +281,3 @@ if __name__ == "__main__":
                     neighborhood.addNeighbor(neighbor)
 
     print("finito")
-
