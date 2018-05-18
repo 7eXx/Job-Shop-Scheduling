@@ -1,4 +1,5 @@
 import sys
+from Tabu import *
 from Neighborhood import *
 from MoveSet import *
 from Block import *
@@ -6,9 +7,7 @@ from Job import *
 from Task import *
 from Util import *
 
-
-
-def NeighborSearchProcedure(solution, tabu_list):
+def neighborSearchProcedure(solution, tabu_list):
 
     fp_moves = solution.forbittenProfittableMoves(tabu_list.moves, solution.makespan)
     print("Forbitten Profittable Moves: ")
@@ -37,17 +36,19 @@ def NeighborSearchProcedure(solution, tabu_list):
         best_move = solution.moves[0]
 
     else:
-        # TODO sistemare STEP 2 del'algoritmo NSP
-        # utilizzare come supporto la generazione T = T +Tmax
-        None
+
+        u_moves = solution.unforbittenMoves(tabu_list.moves)
+        while len(u_moves) == 0:
+            tabu_list.shiftTmax()
+            u_moves = solution.unforbittenMoves(tabu_list.moves)
+
+        best_move = u_moves[0]
 
     solution_new = solution.generateNeighbor(best_move)
-    tabu_list_new = tabu_list.add(best_move)
+    move_added = tabu_list.addMoveTabu(best_move)
 
-    return solution_new, tabu_list_new
-
-
-
+    ## TODO far tornare anche il nuovo makespan se migliore del precedente
+    return solution_new, tabu_list
 
 
 if __name__ == "__main__":
@@ -99,14 +100,27 @@ if __name__ == "__main__":
     print("-- ecco i move_sets:")
     print(initial_solution.strAllMoveSets() + "\n")
 
+    ## lista tabu iniziale
+    tabu_list = Tabu_List()
 
     ## applicazione algoritmo NSP
+    solution_new, tabu_list = neighborSearchProcedure(initial_solution, tabu_list)
 
+    print("-- NUOVA SOLUZIONE: ")
+    print(str(solution_new))
+    print("-- makespan: " + str(solution_new.makespan))
+    print("-- ecco i percorsi critici: ")
+    print(solution_new.strAllCriticalPaths() + "\n")
+    print("-- tutti i blocchi")
+    print(solution_new.strAllBlockSets() + "\n")
+    print("-- ecco i move_sets:")
+    print(solution_new.strAllMoveSets() + "\n")
 
-
+    print("Tabu List: ")
+    print(tabu_list)
 
     ## per tutti i move_set genera il neighborhood
-    neighborhood = initial_solution.generateNeighborhood(initial_solution.all_move_sets)
+    neighborhood = initial_solution.generateNeighborhood(initial_solution.moves)
 
     for neighbor in neighborhood.neighbors:
 

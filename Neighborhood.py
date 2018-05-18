@@ -103,6 +103,8 @@ class Solution:
 
         return u_moves
 
+    ##
+
 
     def makeSpan(self):
         return self.makespan
@@ -140,13 +142,12 @@ class Solution:
 
     ## da usare con parsimonia
     ## dal vicino attuale prova a generare tutti i sottovicini
-    def generateNeighborhood(self, all_move_sets):
+    def generateNeighborhood(self, move_set):
 
         neighborhood = Neighborhood()
-        for move_set in all_move_sets:
-            for move in move_set.move_set:
-                neighbor = self.generateNeighbor(move)
-                neighborhood.addNeighbor(neighbor)
+        for move in move_set:
+            neighbor = self.generateNeighbor(move)
+            neighborhood.addNeighbor(neighbor)
 
         return neighborhood
 

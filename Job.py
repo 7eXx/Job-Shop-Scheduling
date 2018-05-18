@@ -1,3 +1,4 @@
+from Task import *
 '''
 classe per modellare il Job
 '''
