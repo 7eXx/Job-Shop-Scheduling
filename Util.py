@@ -64,6 +64,81 @@ def analyzeDeleteLoop(machines):
             print("nessun ciclo trovato \n")
 
 
+## metodo che dai/dal task ritorna i critical path
+## da una lista di tasks che hanno makespan maggiore
+def allCriticalPaths(tasks):
+    all_critical_paths = []
+    for t in tasks:
+        ## torna tutti i percorsi critici associati a un task con schema [[]]
+        multiple_critical_paths = multipleCriticalPath(t, [[]])
+        ## per tutti i percorsi critici del task li associa a una nuova lista
+        for multi_paths in multiple_critical_paths:
+            all_critical_paths.append(multi_paths)
+
+    ## struttura del tipo [[crit_path_1],[crit_path_2]] ecc
+    ## raddrizza tutti i critical path
+    for crit_path in all_critical_paths:
+        crit_path.reverse()
+
+    return all_critical_paths
+
+##
+def multipleCriticalPath(node, multiple_paths=[[]]):
+    prev_task_machine = node.mpTask
+    prev_task_job = node.jpTask
+
+    if prev_task_machine is not None and prev_task_job is not None:
+
+        if prev_task_machine.finishTime == prev_task_job.finishTime:
+            multiple_paths.append([node])
+            return multipleCriticalPath(prev_task_machine, multiple_paths)
+
+            multiple_paths.append([node])
+            return multipleCriticalPath(prev_task_job, multiple_paths)
+
+        if prev_task_machine.finishTime > prev_task_job.finishTime:
+
+            multiple_paths[0].append(node)
+            return multipleCriticalPath(prev_task_machine, multiple_paths)
+
+        elif prev_task_machine.finishTime < prev_task_job.finishTime:
+
+            multiple_paths[0].append(node)
+            return multipleCriticalPath(prev_task_job, multiple_paths)
+
+    elif prev_task_machine is not None:
+        multiple_paths[0].append(node)
+        return multipleCriticalPath(prev_task_machine, multiple_paths)
+
+    elif prev_task_job is not None:
+        multiple_paths[0].append(node)
+        return multipleCriticalPath(prev_task_job, multiple_paths)
+
+    else:
+        multiple_paths[0].append(node)
+        return multiple_paths
+
+
+## funzione che date le macchine
+## calcola i task con make span maggiore
+## che sono schedulati per ultimi
+def lastestTasks(machines):
+
+    last_task_machines = []
+    for m in machines:
+        last_task_machines.append(m.tasks[-1])
+
+    max_task = max(last_task_machines, key=lambda m: m.finishTime)
+
+    ## verifica se ci sono piu' task che hanno durata uguale al max
+    max_tasks = []
+    for t in last_task_machines:
+        if t.finishTime == max_task.finishTime:
+            max_tasks.append(t)
+
+    return max_tasks
+
+
 ## riesegue buona enumerazione dei nodi secondo l'espolarzione
 def enumerateNode(node):
 
@@ -94,3 +169,5 @@ def enumerateGraph(machines):
     for m in machines:
         if len(m.tasks) > 0:
             enumerateNode(m.tasks[0])
+
+
