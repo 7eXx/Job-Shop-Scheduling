@@ -1,42 +1,55 @@
 '''
-classe per modellare l'operazione
+classe per modellare il Task
 '''
 class Task:
 
     def __init__(self, n, eTime, jpTask=None, jcTask=None, mpTask=None, mcTask=None):
 
+        # Imposta il nome del task
         self.name = "task_" + str(n)
 
+        # Imposta i tempi del task
         self.executionTime = eTime
         self.startTime = 0
         self.finishTime = 0
 
-
-        ## imposta l'ordine padre e figlio sul lavoro
+        # Imposta l'ordine padre e figlio sul lavoro
         self.jpTask = jpTask
         self.jcTask = jcTask
         self.job = None
 
-        ## imposta l'ordine padre figlio sulla macchina
+        # Imposta l'ordine padre figlio sulla macchina
         self.mpTask = mpTask
         self.mcTask = mcTask
         self.machine = None
 
+
+    # Metodo setter per l'attributo che si usa come riferimento al task padre nel job
     def setJobParent(self, task):
         self.jpTask = task
 
+
+    # Metodo setter per l'attributo che si usa come riferimento al task figlio nel job
     def setJobChildren(self, task):
         self.jcTask = task
 
+
+    # Metodo setter per l'attributo che indica il job a cui appartiene il task
     def setJob(self, job):
         self.job = job
 
+
+    # Metodo setter per l'attributo che si usa come riferimento al task padre nella macchina
     def setMachineParent(self, task):
         self.mpTask = task
 
+
+    # Metodo setter per l'attributo che si usa come riferimento al task figlio nella macchina
     def setMachineChildren(self,task):
         self.mcTask = task
 
+
+    # Metodo setter per l'attributo che indica la macchina a cui appartiene il task
     def setMachine(self, machine):
         self.machine = machine
 
@@ -53,5 +66,3 @@ class Task:
                   "fine: " + str(self.finishTime) + "\n" +\
                   "tempo esecuzione: " + str(self.executionTime) + "\n"
         return stringa
-
-
