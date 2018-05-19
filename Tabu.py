@@ -4,11 +4,6 @@ from queue import *
 '''
 Classe per modellare la Tabu List
 '''
-class Tabu:
-
-    None
-
-
 class Tabu_List:
 
     # Variabile statica che definisce la grandezza massima della lista, quindi il numero massimo di mosse memorizzabili
