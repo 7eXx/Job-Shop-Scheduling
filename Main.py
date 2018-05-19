@@ -7,47 +7,59 @@ from Job import *
 from Task import *
 from Util import *
 
+# Funzione che cerca una nuova soluzione tramite tabu search a partire dalla soluzione attuale
 def neighborSearchProcedure(solution, tabu_list):
 
+    # Genera tutte le mosse proibite e le stampa
     fp_moves = solution.forbittenProfittableMoves(tabu_list.moves, solution.makespan)
     print("Forbitten Profittable Moves: ")
     for m in fp_moves: print(m)
 
+    # Genera tutte le mosse non proibite e le stampa
     u_moves = solution.unforbittenMoves(tabu_list.moves)
     print("Unforbitten Moves: ")
     for m in u_moves: print(m)
 
-    ## unione insiemi di fp_moves e u_moves
+    # Unisce le mosse proibite con quelle non proibite e le stampa
     union_fp_u = Move.unionMoves(fp_moves, u_moves)
     print("Union FP con U Moves: ")
     for m in union_fp_u: print(m)
 
+
+    # Se l'unione delle mosse proibite e non proibite contiene delle mosse
     best_move = None
     if len(union_fp_u) > 0:
         best_move = union_fp_u[0]
+
+        # Cerca la mossa migliore generando i vicini e confrontandone il makespan con quello della soluzione migliore
         best_solution = solution.generateNeighbor(best_move)
         for move in union_fp_u:
             new_solution = solution.generateNeighbor(move)
             if new_solution.makespan < best_solution.makespan:
                 best_move = move
 
+    # Altrimenti se la soluzione attuale ha una sola mossa, quella mossa e' quella migliore
     elif len(solution.moves) == 1:
-
         best_move = solution.moves[0]
 
+    # Nel caso in cui ci siano piu' mosse nella soluzione attuale
     else:
 
+        # Genero le mosse non proibite finche' non ne esiste almeno una aggiornando la tabu_list
         u_moves = solution.unforbittenMoves(tabu_list.moves)
         while len(u_moves) == 0:
             tabu_list.shiftTmax()
             u_moves = solution.unforbittenMoves(tabu_list.moves)
 
+        # La mossa migliore e' la prima tra le mosse non proibite
         best_move = u_moves[0]
 
+    # Trovo la nuova soluzione generando i vicini tramite la mossa migliore trovata in precedenza
     solution_new = solution.generateNeighbor(best_move)
     move_added = tabu_list.addMoveTabu(best_move)
 
     ## TODO far tornare anche il nuovo makespan se migliore del precedente
+    # Restituisco la soluzione e la tabu_list
     return solution_new, tabu_list
 
 
