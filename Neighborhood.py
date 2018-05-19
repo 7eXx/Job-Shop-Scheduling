@@ -12,6 +12,7 @@ class Neighborhood:
     def __init__(self):
         self.neighbors = []
 
+
     # Metodo che aggiunge un vicino alla lista dei vicini
     def addNeighbor(self, neighbor):
         self.neighbors.append(neighbor)
@@ -150,6 +151,7 @@ class Solution:
                     moves.append(move)
         return moves
 
+
     # Metodo che dalla soluzione attuale prova a generare il vicinato
     def generateNeighborhood(self, move_set):
 
@@ -172,6 +174,7 @@ class Solution:
         stringa += "]"
         return  stringa
 
+
     # Metodo che crea la rappresentazione di tutti i blocchi e la inserisce in una stringa che restituisce
     def strAllBlockSets(self):
         stringa = ""
@@ -180,12 +183,14 @@ class Solution:
             stringa += str(block_set)
         return stringa
 
+
     # Metodo che crea la rappresentazione di tutti i moveset e la inserisce in una stringa che restituisce
     def strAllMoveSets(self):
         stringa = ""
         for move_set in self.all_move_sets:
             stringa += str(move_set)
         return stringa
+
 
     # Metodo che crea la rappresentazione di tutte le mosse e la inserisce in una stringa che restituisce
     def strMoves(self):
@@ -195,9 +200,11 @@ class Solution:
         stringa += "]"
         return stringa
 
+
     # Metodo che restituisce il valore di makespan della soluzione
     def makeSpan(self):
         return self.makespan
+
 
     def __str__(self):
         stringa = ""
@@ -205,5 +212,3 @@ class Solution:
             stringa += str(m) + "\n"
 
         return stringa
-
-
