@@ -1,5 +1,5 @@
 '''
-classe per modellare il Task
+Classe per modellare il Task
 '''
 class Task:
 
