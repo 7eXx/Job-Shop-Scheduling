@@ -1,6 +1,6 @@
 
 '''
-classe per la gestione del
+classe per la gestione del BlockSet
 
 '''
 class BlockSet:
@@ -9,25 +9,30 @@ class BlockSet:
 
         self.block_set = self.buildBlocks(critical_path)
 
-    ## questo metodo dal critical path restituisce
-    ## una lista di blocchi: dimensione massima per ogni macchina
-    ## (per maggiori dettagli vedere teoria)
+
+    # Metodo che dal critical path restituisce una lista di blocchi di dimensione massima per ogni macchina
     def buildBlocks(self, critical_path):
 
+        # Per ogni task nel critical_path
         blocks = []
         prev_task = None
         for task in critical_path:
 
-            ## verifica se il task precedente della macchina è nullo
+            # Verifica se il task precedente della macchina è nullo aggiungendo un blocco composto dal solo task
             if task.mpTask is None or task.machine != prev_task.machine:
                 blocks.append([task])
 
+            # In caso contrario inserisce il task nell'ultimo blocco
             else:
                 blocks[-1].append(task)
 
+            # Aggiornamento il task precedente
             prev_task = task
 
+        # Ritorna la lista dei blocchi
         return blocks
+
+
 
     def __str__(self):
         stringa = "["
@@ -39,4 +44,3 @@ class BlockSet:
 
         stringa += "]"
         return stringa
-
