@@ -37,7 +37,8 @@ class MoveSet:
                         if len(block) > 2:
                             move_1 = Move(block[0], block[1])
                             move_2 = Move(block[-2], block[-1])
-                            moves.append(move_1, move_2)
+                            moves.append(move_1)
+                            moves.append(move_2)
 
                         elif len(block) > 1:
                             move = Move(block[0], block[1])
