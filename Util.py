@@ -79,7 +79,7 @@ def allCriticalPaths(tasks):
     # Per tutti i task trova tutti i critical path e li salva uno ad uno in all_critical_path
     all_critical_paths = []
     for t in tasks:
-        multiple_critical_paths = multipleCriticalPath(t, [[]])
+        multiple_critical_paths = multipleCriticalPath(t, 0, [[]])
         for multi_paths in multiple_critical_paths:
             all_critical_paths.append(multi_paths)
 
@@ -92,7 +92,7 @@ def allCriticalPaths(tasks):
 
 
 # Funzione ricorsiva che trova tutti i critical path che hanno termine nel task nodo
-def multipleCriticalPath(node, multiple_paths=[[]]):
+def multipleCriticalPath(node, idx, multiple_paths=[[]]):
 
     # Salvo i task precedenti al task attuale
     prev_task_machine = node.mpTask
@@ -106,37 +106,37 @@ def multipleCriticalPath(node, multiple_paths=[[]]):
 
             # Aggiunge il task attuale ai critical path e richiama la funzione ricorsivamente sui task precedenti
             multiple_paths.append([node])
-            return multipleCriticalPath(prev_task_machine, multiple_paths)
+            return multipleCriticalPath(prev_task_machine, idx, multiple_paths)
             multiple_paths.append([node])
-            return multipleCriticalPath(prev_task_job, multiple_paths)
+            return multipleCriticalPath(prev_task_job, idx + 1, multiple_paths)
 
         # Se il tempo di fine del task precedente di macchina e' maggiore del tempo di fine del task precedente di job
         if prev_task_machine.finishTime > prev_task_job.finishTime:
 
             # Aggiunge il task attuale al primo critical path e chiama la funzione sul task di macchina precedente
-            multiple_paths[0].append(node)
-            return multipleCriticalPath(prev_task_machine, multiple_paths)
+            multiple_paths[idx].append(node)
+            return multipleCriticalPath(prev_task_machine, idx, multiple_paths)
 
         # Se il tempo di fine del task precedente di macchina e' minore del tempo di fine del task precedente di jo
         elif prev_task_machine.finishTime < prev_task_job.finishTime:
 
             # Aggiunge il task attuale al primo critical path e chiama la funzione sul task di job precedente
-            multiple_paths[0].append(node)
-            return multipleCriticalPath(prev_task_job, multiple_paths)
+            multiple_paths[idx].append(node)
+            return multipleCriticalPath(prev_task_job, idx, multiple_paths)
 
     # Altrimenti se esiste solo il task precedente di macchina
     elif prev_task_machine is not None:
 
         # Aggiunge il task attuale al primo critical path e chiama la funzione sul task di macchina precedente
-        multiple_paths[0].append(node)
-        return multipleCriticalPath(prev_task_machine, multiple_paths)
+        multiple_paths[idx].append(node)
+        return multipleCriticalPath(prev_task_machine, idx, multiple_paths)
 
     # Altrimenti se esiste solo il task precedente di job
     elif prev_task_job is not None:
 
         # Aggiunge il task attuale al primo critical path e chiama ricorsivamente la funzione sul task di job precedente
-        multiple_paths[0].append(node)
-        return multipleCriticalPath(prev_task_job, multiple_paths)
+        multiple_paths[idx].append(node)
+        return multipleCriticalPath(prev_task_job, idx, multiple_paths)
 
     # In caso contrario, vuol dire che non ci sono task precedenti
     else:
