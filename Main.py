@@ -111,17 +111,13 @@ if __name__ == "__main__":
             ## assegnazionio dei job alle macchine in relazione al vettore di assegnamento
             machines[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
 
-    #for m in machines: m.randomTasks()
+    for m in machines: m.randomTasks()
 
-    # Assegnamento di prova per valutare condizione erronea
-    machines[0].tasks.insert(0, machines[0].tasks[-1])
-    machines[0].tasks = machines[0].tasks[:-1]
-    machines[1].tasks.insert(0, machines[1].tasks[-1])
-    machines[1].tasks = machines[1].tasks[:-1]
-    machines[2].tasks.insert(0, machines[2].tasks[-1])
-    machines[2].tasks = machines[2].tasks[:-1]
+    ''''# Assegnamento di prova per valutare condizione erronea
+    machines[1].tasks[0], machines[1].tasks[1] = machines[1].tasks[1], machines[1].tasks[0]
+    machines[1].tasks[1], machines[1].tasks[2] = machines[1].tasks[2], machines[1].tasks[1]
     for m in machines: m.updateRefTasks()
-    for m in machines: print(m)
+    for m in machines: print(m)'''
 
     initial_solution = Solution(machines)
 

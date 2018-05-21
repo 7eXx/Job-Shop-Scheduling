@@ -1,3 +1,4 @@
+import random
 '''
 File con tutte le funzioni e procedure che non appartengono a nessuna classe
 '''
@@ -18,13 +19,18 @@ def loopDetenction(node, visited=[]):
 
         # Aggiunge il nodo ai visitati e richiama questa funzione per il task successivo nel job e nella macchina
         visited.append(node)
-        if node.jcTask is not None:
-            return loopDetenction(node.jcTask, visited)
-        if node.mcTask is not None:
-            return loopDetenction(node.mcTask, visited)
+        found = False
+        if node.mcTask is not None and not found:
+            found, visited = loopDetenction(node.mcTask, visited)
+        if node.jcTask is not None and not found:
+            found, visited = loopDetenction(node.jcTask, visited)
+
+        # Elimino l'ultimo nodo dalla lista dei visitati
+        if not found:
+            visited = visited[:-1]
 
         # Se si arriva a questo punto significa che non sono stati trovati cicli
-        return False, visited
+        return found, visited
 
 
 # Procedura che elimina il loop dal percorso tramite inversione di un arco che collega due task nella stessa macchina
