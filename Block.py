@@ -18,7 +18,7 @@ class BlockSet:
         for task in critical_path:
 
             # Verifica se il task precedente della macchina è nullo aggiungendo un blocco composto dal solo task
-            if task.mpTask is None or task.machine != prev_task.machine:
+            if task is not None or task.mpTask is None or task.machine != prev_task.machine:
                 blocks.append([task])
 
             # In caso contrario inserisce il task nell'ultimo blocco
