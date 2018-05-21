@@ -1,3 +1,4 @@
+import random
 '''
 classe per modellare la macchina
 '''
@@ -73,6 +74,17 @@ class Machine:
         self.tasks.sort(key=lambda task: task.executionTime,reverse=True)
 
         ## aggiornamento riferimenti task
+        self.updateRefTasks()
+
+    ## genera un assegnamento casuale del task alla macchina
+    def randomTasks(self):
+        tasks = []
+        for t in self.tasks:
+            tasks.insert(random.randint(0, len(self.tasks)), t)
+
+        # Imposta l'ordine nei task della macchina e aggiorna i tempi
+        self.tasks = tasks
+
         self.updateRefTasks()
 
     ## pulizia degli start time

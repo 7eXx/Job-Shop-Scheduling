@@ -22,12 +22,13 @@ class BlockSet:
             if task.mpTask is None or task.machine != prev_task.machine:
                 blocks.append([task])
 
-            else:
+            elif len(blocks) > 0:
                 blocks[-1].append(task)
 
             prev_task = task
 
         return blocks
+
 
     def __str__(self):
         stringa = "["

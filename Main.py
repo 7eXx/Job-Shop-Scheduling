@@ -121,34 +121,40 @@ if __name__ == "__main__":
             ## assegnazionio dei job alle macchine in relazione al vettore di assegnamento
             machines[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
 
-    for m in machines:
-        print(m)
+    # Assegnamento di prova per multiple critical path
+    machines[0].tasks.insert(0, machines[0].tasks[-1])
+    machines[0].tasks = machines[0].tasks[:-1]
+    machines[1].tasks.insert(0, machines[1].tasks[-1])
+    machines[1].tasks = machines[1].tasks[:-1]
+    machines[2].tasks.insert(0, machines[2].tasks[-1])
+    machines[2].tasks = machines[2].tasks[:-1]
 
-    for m in machines:
-        m.shortestTaskFirst()
+
+    '''
+    # Assegnamento di prova per valutare condizione erronea
+    machines[1].tasks[0], machines[1].tasks[1] = machines[1].tasks[1], machines[1].tasks[0]
+    machines[1].tasks[1], machines[1].tasks[2] = machines[1].tasks[2], machines[1].tasks[1]
+    '''
+
+    for m in machines: m.updateRefTasks()
+    for m in machines: print(m)
+
+
+    #for m in machines:
+    #    m.randomTasks()
 
     initial_solution = Solution(machines)
 
     print("-- SOLUZIONE INIZIALE: ")
     printSolution(initial_solution)
 
-    input()
     ## visualizza i vicini al primo livello
     neighborhood = initial_solution.generateNeighborhood(initial_solution.moves)
 
-    for neighbor in neighborhood.neighbors:
-        print("-- neighbor: ")
-        print(str(neighbor))
-        print("-- makespan: " + str(neighbor.makeSpan()))
-        print("-- ecco i percorsi critici: ")
-        print(neighbor.strAllCriticalPaths() + "\n")
-        print("-- tutti i blocchi")
-        print(neighbor.strAllBlockSets() + "\n")
-        print("-- ecco i move_sets:")
-        print(neighbor.strAllMoveSets() + "\n")
+    for i in range(0, len(neighborhood.neighbors)):
+        print("-- neighbor: " + str(i+1))
+        printSolution(neighborhood.neighbors[i])
 
-
-    input()
     ## lista tabu iniziale
     tabu_list = Tabu_List()
 
@@ -158,13 +164,12 @@ if __name__ == "__main__":
     solution_new = initial_solution.generateNeighbor(best_move)
 
     print("-- GENERAZIONE DEL MIGLIOR VICINATO: ")
-    print(solution_new)
+    printSolution(solution_new)
 
     print("Tabu List: ")
     print(tabu_list)
 
 
-    input()
     ## ricerca soluzione migliore con tabu search
     tabu_list = Tabu_List()
     opt_solution = tabuSearchAlgorithm(initial_solution, tabu_list)
