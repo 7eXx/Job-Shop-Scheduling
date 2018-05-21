@@ -7,6 +7,7 @@ from Job import *
 from Task import *
 from Util import *
 
+## questo metodo implementa  la ricerca del miglior vicino
 def neighborSearchProcedure(solution, tabu_list):
 
     fp_moves = solution.forbittenProfittableMoves(tabu_list.moves, solution.makespan)
@@ -26,10 +27,10 @@ def neighborSearchProcedure(solution, tabu_list):
     if len(union_fp_u) > 0:
         best_move = union_fp_u[0]
         best_solution = solution.generateNeighbor(best_move)
-        for move in union_fp_u:
-            new_solution = solution.generateNeighbor(move)
+        for i in  range(1,len(union_fp_u)):
+            new_solution = solution.generateNeighbor(union_fp_u[i])
             if new_solution.makespan < best_solution.makespan:
-                best_move = move
+                best_move = union_fp_u[i]
 
     elif len(solution.moves) == 1:
 
@@ -44,11 +45,39 @@ def neighborSearchProcedure(solution, tabu_list):
 
         best_move = u_moves[0]
 
-    solution_new = solution.generateNeighbor(best_move)
+    ## ritorna vero se la mossa è stata aggiunta alla tabu list
     move_added = tabu_list.addMoveTabu(best_move)
 
     ## TODO far tornare anche il nuovo makespan se migliore del precedente
-    return solution_new, tabu_list
+    return best_move, tabu_list
+
+
+def tabuSearchAlgorithm(solution, tabu_list):
+
+    MAX_ITER = 5
+    iter = 0
+    ## imposta soluzione ricevuta come ottima
+    opt_solution = solution
+
+    while len(opt_solution.moves) > 0 and iter < MAX_ITER:
+
+        ## applicazione NSP
+        best_move, tabu_list = neighborSearchProcedure(opt_solution, tabu_list)
+        ## crea la nuova soluzione
+        new_solution = opt_solution.generateNeighbor(best_move)
+        # se il makespan della nuova soluzione è migliore di quella ottima
+        if new_solution.makespan < opt_solution.makespan:
+            ## aggiornamento della soluzione
+            opt_solution = new_solution
+            ## iteratore viene riportato a 0
+            iter = 0
+        else:
+            ## altrimenti incremento iteratore
+            iter = iter + 1
+
+    ## ritorno soluzione ottima
+    return opt_solution
+
 
 
 if __name__ == "__main__":
@@ -100,13 +129,32 @@ if __name__ == "__main__":
     print("-- ecco i move_sets:")
     print(initial_solution.strAllMoveSets() + "\n")
 
+    input()
+    ## visualizza i vicini al primo livello
+    neighborhood = initial_solution.generateNeighborhood(initial_solution.moves)
+
+    for neighbor in neighborhood.neighbors:
+        print("-- neighbor: ")
+        print(str(neighbor))
+        print("-- makespan: " + str(neighbor.makeSpan()))
+        print("-- ecco i percorsi critici: ")
+        print(neighbor.strAllCriticalPaths() + "\n")
+        print("-- tutti i blocchi")
+        print(neighbor.strAllBlockSets() + "\n")
+        print("-- ecco i move_sets:")
+        print(neighbor.strAllMoveSets() + "\n")
+
+
+    input()
     ## lista tabu iniziale
     tabu_list = Tabu_List()
 
     ## applicazione algoritmo NSP
-    solution_new, tabu_list = neighborSearchProcedure(initial_solution, tabu_list)
+    best_move, tabu_list = neighborSearchProcedure(initial_solution, tabu_list)
+    ## nuova soluzione applicando la best move
+    solution_new = initial_solution.generateNeighbor(best_move)
 
-    print("-- NUOVA SOLUZIONE: ")
+    print("-- GENERAZIONE DEL MIGLIOR VICINATO: ")
     print(str(solution_new))
     print("-- makespan: " + str(solution_new.makespan))
     print("-- ecco i percorsi critici: ")
@@ -119,21 +167,21 @@ if __name__ == "__main__":
     print("Tabu List: ")
     print(tabu_list)
 
-    ## per tutti i move_set genera il neighborhood
-    neighborhood = initial_solution.generateNeighborhood(initial_solution.moves)
 
-    for neighbor in neighborhood.neighbors:
+    input()
+    ## ricerca soluzione migliore con tabu search
+    tabu_list = Tabu_List()
+    opt_solution = tabuSearchAlgorithm(initial_solution, tabu_list)
 
-        print("-- neighbor: ")
-        print(str(neighbor))
-        print("-- makespan: " + str(neighbor.makeSpan()))
-        print("-- ecco i percorsi critici: ")
-        print(neighbor.strAllCriticalPaths() + "\n")
-        print("-- tutti i blocchi")
-        print(neighbor.strAllBlockSets() + "\n")
-        print("-- ecco i move_sets:")
-        print(neighbor.strAllMoveSets() + "\n")
-
-
+    print("-- SOLUZIONE OTTIMA CON TABU SEARCH: ")
+    print(str(opt_solution))
+    print("-- makespan: " + str(opt_solution.makespan))
+    print("-- ecco i percorsi critici: ")
+    print(opt_solution.strAllCriticalPaths() + "\n")
+    print("-- tutti i blocchi")
+    print(opt_solution.strAllBlockSets() + "\n")
+    print("-- ecco i move_sets:")
+    print(opt_solution.strAllMoveSets() + "\n")
 
     print("finito")
+
