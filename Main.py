@@ -78,6 +78,16 @@ def tabuSearchAlgorithm(solution, tabu_list):
     ## ritorno soluzione ottima
     return opt_solution
 
+def printSolution(solution):
+
+    print(str(solution))
+    print("-- makespan: " + str(solution.makespan))
+    print("-- ecco i percorsi critici: ")
+    print(solution.strAllCriticalPaths() + "\n")
+    print("-- tutti i blocchi")
+    print(solution.strAllBlockSets() + "\n")
+    print("-- ecco i move_sets:")
+    print(solution.strAllMoveSets() + "\n")
 
 
 if __name__ == "__main__":
@@ -120,14 +130,7 @@ if __name__ == "__main__":
     initial_solution = Solution(machines)
 
     print("-- SOLUZIONE INIZIALE: ")
-    print(str(initial_solution))
-    print("-- makespan: " + str(initial_solution.makespan))
-    print("-- ecco i percorsi critici: ")
-    print(initial_solution.strAllCriticalPaths() + "\n")
-    print("-- tutti i blocchi")
-    print(initial_solution.strAllBlockSets() + "\n")
-    print("-- ecco i move_sets:")
-    print(initial_solution.strAllMoveSets() + "\n")
+    printSolution(initial_solution)
 
     input()
     ## visualizza i vicini al primo livello
@@ -155,14 +158,7 @@ if __name__ == "__main__":
     solution_new = initial_solution.generateNeighbor(best_move)
 
     print("-- GENERAZIONE DEL MIGLIOR VICINATO: ")
-    print(str(solution_new))
-    print("-- makespan: " + str(solution_new.makespan))
-    print("-- ecco i percorsi critici: ")
-    print(solution_new.strAllCriticalPaths() + "\n")
-    print("-- tutti i blocchi")
-    print(solution_new.strAllBlockSets() + "\n")
-    print("-- ecco i move_sets:")
-    print(solution_new.strAllMoveSets() + "\n")
+    print(solution_new)
 
     print("Tabu List: ")
     print(tabu_list)
@@ -174,14 +170,7 @@ if __name__ == "__main__":
     opt_solution = tabuSearchAlgorithm(initial_solution, tabu_list)
 
     print("-- SOLUZIONE OTTIMA CON TABU SEARCH: ")
-    print(str(opt_solution))
-    print("-- makespan: " + str(opt_solution.makespan))
-    print("-- ecco i percorsi critici: ")
-    print(opt_solution.strAllCriticalPaths() + "\n")
-    print("-- tutti i blocchi")
-    print(opt_solution.strAllBlockSets() + "\n")
-    print("-- ecco i move_sets:")
-    print(opt_solution.strAllMoveSets() + "\n")
+    printSolution(opt_solution)
 
     print("finito")
 
