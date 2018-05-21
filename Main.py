@@ -111,11 +111,9 @@ if __name__ == "__main__":
             ## assegnazionio dei job alle macchine in relazione al vettore di assegnamento
             machines[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
 
-    for m in machines:
-        print(m)
+    #for m in machines: print(m)
 
-    for m in machines:
-        m.shortestTaskFirst()
+    for m in machines: m.shortestTaskFirst()
 
     initial_solution = Solution(machines)
 
