@@ -1,4 +1,3 @@
-
 '''
 classe per la gestione del BlockSet
 

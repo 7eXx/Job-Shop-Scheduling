@@ -1,3 +1,4 @@
+import random
 '''
 classe per modellare la macchina
 '''
@@ -81,6 +82,17 @@ class Machine:
 
         # Ordina i task all'interno della lista posizionando prima i task piu' corti e aggiorna i riferimenti
         self.tasks.sort(key=lambda task: task.executionTime,reverse=True)
+        self.updateRefTasks()
+
+
+    # Metodo che ordina i task in modo casuale
+    def randomTasks(self):
+        tasks = []
+        for t in self.tasks:
+            tasks.insert(random.randint(0, len(self.tasks)), t)
+
+        # Imposta l'ordine nei task della macchina e aggiorna i tempi
+        self.tasks = tasks
         self.updateRefTasks()
 
 

@@ -94,11 +94,9 @@ if __name__ == "__main__":
             ## assegnazionio dei job alle macchine in relazione al vettore di assegnamento
             machines[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
 
-    for m in machines:
-        print(m)
+    for m in machines: print(m)
 
-    for m in machines:
-        m.shortestTaskFirst()
+    for m in machines: m.randomTasks()
 
     initial_solution = Solution(machines)
 
@@ -132,19 +130,20 @@ if __name__ == "__main__":
     print(tabu_list)
 
     ## per tutti i move_set genera il neighborhood
-    neighborhood = initial_solution.generateNeighborhood(initial_solution.moves)
+    #neighborhood = initial_solution.generateNeighborhood(initial_solution.moves)
+    solution_new, tabu_list = neighborSearchProcedure(solution_new, tabu_list)
 
-    for neighbor in neighborhood.neighbors:
+    print("-- NUOVA SOLUZIONE: ")
+    print(str(solution_new))
+    print("-- makespan: " + str(solution_new.makespan))
+    print("-- ecco i percorsi critici: ")
+    print(solution_new.strAllCriticalPaths() + "\n")
+    print("-- tutti i blocchi")
+    print(solution_new.strAllBlockSets() + "\n")
+    print("-- ecco i move_sets:")
+    print(solution_new.strAllMoveSets() + "\n")
 
-        print("-- neighbor: ")
-        print(str(neighbor))
-        print("-- makespan: " + str(neighbor.makeSpan()))
-        print("-- ecco i percorsi critici: ")
-        print(neighbor.strAllCriticalPaths() + "\n")
-        print("-- tutti i blocchi")
-        print(neighbor.strAllBlockSets() + "\n")
-        print("-- ecco i move_sets:")
-        print(neighbor.strAllMoveSets() + "\n")
-
+    print("Tabu List: ")
+    print(tabu_list)
 
     print("finito")
