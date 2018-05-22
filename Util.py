@@ -1,4 +1,4 @@
-
+import copy
 ## questo metodo identifica il loop
 ## ritorna una lista ciclica che forma il loop
 def loopDetenction(node, visited=[]):
@@ -75,7 +75,7 @@ def allCriticalPaths(tasks):
     all_critical_paths = []
     for t in tasks:
         ## torna tutti i percorsi critici associati a un task con schema [[]]
-        multiple_critical_paths = multipleCriticalPath(t, [[]])
+        multiple_critical_paths = multipleCriticalPath(t, [], [])
         ## per tutti i percorsi critici del task li associa a una nuova lista
         for multi_paths in multiple_critical_paths:
             all_critical_paths.append(multi_paths)
@@ -88,7 +88,10 @@ def allCriticalPaths(tasks):
     return all_critical_paths
 
 
-def singlePath(node, path=[]):
+def multipleCriticalPath(node, multiple_paths=[], path=[]):
+
+    if (len(path) == 0):
+        multiple_paths.append(path)
 
     prev_task_machine = node.mpTask
     prev_task_job = node.jpTask
@@ -97,70 +100,36 @@ def singlePath(node, path=[]):
 
         if prev_task_machine.finishTime == prev_task_job.finishTime:
 
-            return multipleCriticalPath(node, )
+            path.append(node)
+
+            path_2 = copy.copy(path)
+            multiple_paths.append(path_2)
+
+            multipleCriticalPath(prev_task_job, multiple_paths, path)
+            multipleCriticalPath(prev_task_machine, multiple_paths, path_2)
 
         if prev_task_machine.finishTime > prev_task_job.finishTime:
 
             path.append(node)
-            return singlePath(prev_task_machine, path)
+            multipleCriticalPath(prev_task_machine, multiple_paths, path)
 
         elif prev_task_machine.finishTime < prev_task_job.finishTime:
 
             path.append(node)
-            return singlePath(prev_task_job, path)
+            multipleCriticalPath(prev_task_job, multiple_paths, path)
 
     elif prev_task_machine is not None:
         path.append(node)
-        return singlePath(prev_task_machine, path)
+        multipleCriticalPath(prev_task_machine, multiple_paths, path)
 
     elif prev_task_job is not None:
         path.append(node)
-        return singlePath(prev_task_job, path)
+        multipleCriticalPath(prev_task_job, multiple_paths, path)
 
     else:
         path.append(node)
-        return path
 
-
-def multipleCriticalPath(node, multiple_paths=[[]]):
-
-    prev_task_machine = node.mpTask
-    prev_task_job = node.jpTask
-
-    ## TODO costruire questo algoritmo
-
-    if prev_task_machine is not None and prev_task_job is not None:
-
-        if prev_task_machine.finishTime == prev_task_job.finishTime:
-
-            multiple_paths[-1].append(node)
-
-            multipleCriticalPath(prev_task_job, multiple_paths)
-
-            side_machine = multipleCriticalPath(prev_task_machine, multiple_paths)
-
-
-        if prev_task_machine.finishTime > prev_task_job.finishTime:
-
-            multiple_paths[-1].append(node)
-            return multipleCriticalPath(prev_task_machine, multiple_paths)
-
-        elif prev_task_machine.finishTime < prev_task_job.finishTime:
-
-            multiple_paths[-1].append(node)
-            return multipleCriticalPath(prev_task_job, multiple_paths)
-
-    elif prev_task_machine is not None:
-        multiple_paths[-1].append(node)
-        return multipleCriticalPath(prev_task_machine, multiple_paths)
-
-    elif prev_task_job is not None:
-        multiple_paths[-1].append(node)
-        return multipleCriticalPath(prev_task_job, multiple_paths)
-
-    else:
-        multiple_paths[-1].append(node)
-        return multiple_paths
+    return multiple_paths
 
 
 ## funzione che date le macchine
