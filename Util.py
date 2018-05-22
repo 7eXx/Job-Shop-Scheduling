@@ -61,12 +61,12 @@ def analyzeDeleteLoop(machines):
                 break
 
         if c_cycle:
-            print("ciclo trovato \n")
+            # print("ciclo trovato \n")
             deleteLoop(visited, exchanged_set)
 
         else:
             loop = False
-            print("nessun ciclo trovato \n")
+            # print("nessun ciclo trovato \n")
 
 
 ## metodo che dai/dal task ritorna i critical path

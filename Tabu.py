@@ -1,14 +1,5 @@
 from MoveSet import *
 from queue import *
-
-'''
-classe per modellare la tabu search
-'''
-class Tabu:
-
-    None
-
-
 class Tabu_List:
 
     MAX_T = 5

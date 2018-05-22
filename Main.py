@@ -52,7 +52,7 @@ def neighborSearchProcedure(solution, tabu_list):
     return best_move, tabu_list
 
 
-def tabuSearchAlgorithm(solution, tabu_list):
+def tabuSearchAlgorithmNowicki(solution, tabu_list):
 
     MAX_ITER = 5
     iter = 0
@@ -78,6 +78,72 @@ def tabuSearchAlgorithm(solution, tabu_list):
     ## ritorno soluzione ottima
     return opt_solution
 
+## tabu search che permette anche mosse peggiorative
+def tabuSearch(max_iter, solution, tabu_list):
+
+    ## massimo iterazioni
+    MAX_ITER = max_iter
+    # soluzione ottima iniziale
+    opt_solution = solution
+    # lista soluzioni candidate per l'esplorazione
+    list_solutions = []
+    list_solutions.append(solution)
+    ## contatore iterazioni
+    iter = 0
+    while len(list_solutions) > 0 and iter < MAX_ITER:
+
+        # estrae la prima soluzione
+        sol = list_solutions[0]
+        ## per tutte le mosse di ogni soluzione
+        for move in sol.moves:
+            ## verifica se la mossa è applicabile
+            if not tabu_list.searchMove(move):
+                # crea la nuova soluzione
+                new_solution = sol.generateNeighbor(move)
+                # aggiunge la mossa alla lista tabu
+                tabu_list.addMoveTabu(move)
+                # aggiunge la soluzione alla lista dopo aver verificato che non ci sia
+                if not solutionExists(list_solutions, new_solution):
+                    list_solutions.append(new_solution)
+                # aggiorna l'ottimo se migliore di quello attuale
+                if new_solution.makespan < opt_solution.makespan:
+                    opt_solution = new_solution
+                    iter = 0
+                else:
+                    iter = iter + 1
+
+
+
+        ## dopo aver provato ad applicare tutte le mosse
+        ## rimuove la soluzione attuale
+        list_solutions = list_solutions[1:]
+
+    return opt_solution
+
+## metodo per verificare se una soluzione esiste già nella lista
+def solutionExists(list_solutions, solution):
+
+    found = False
+    for sol in list_solutions:
+        # per tutte le macchine
+        for m in range(0, len(sol.machines)):
+
+            task_b = True
+            for t in range(0, len(sol.machines[m].tasks)):
+
+                if not sol.machines[m].tasks[t].name == solution.machines[m].tasks[t].name:
+                    task_b = False
+                    break
+
+            if not task_b:
+                break
+
+        if task_b:
+            found = True
+            break
+
+    return found
+
 def printSolution(solution):
 
     print(str(solution))
@@ -93,6 +159,17 @@ def printSolution(solution):
 if __name__ == "__main__":
 
     # Parametri di default
+    n_macchine = 4
+    n_jobs = 3
+    jobs_times = [[10, 8, 4],
+                  [8, 3, 5, 6],
+                  [4, 7, 3]]
+    assegnamento_macchine = [[0, 1, 2],
+                             [1, 0, 3, 2],
+                             [0, 1, 3]]
+
+    ## esempio maggiore 4x3
+    '''
     n_macchine = 3
     n_jobs = 3
     jobs_times = [[3, 2, 2],
@@ -101,6 +178,7 @@ if __name__ == "__main__":
     assegnamento_macchine = [[0, 1, 2],
                              [0, 2, 1],
                              [1, 2]]
+    '''
 
     # Inizializzazione delle strutture dati
     machines = []
@@ -121,6 +199,15 @@ if __name__ == "__main__":
             ## assegnazionio dei job alle macchine in relazione al vettore di assegnamento
             machines[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
 
+    ## secondo esempio 4x3
+    '''
+    machines[0].tasks[0], machines[0].tasks[1], machines[0].tasks[2] = machines[0].tasks[1], machines[0].tasks[2], machines[0].tasks[0]
+    machines[1].tasks[0], machines[1].tasks[1], machines[1].tasks[2] = machines[1].tasks[1], machines[1].tasks[2], machines[1].tasks[0]
+    machines[2].tasks[0], machines[2].tasks[1] = machines[2].tasks[0], machines[2].tasks[1]
+    machines[3].tasks[0], machines[3].tasks[1] = machines[3].tasks[1], machines[3].tasks[0]
+    '''
+
+    '''
     # Assegnamento di prova per multiple critical path
     machines[0].tasks.insert(0, machines[0].tasks[-1])
     machines[0].tasks = machines[0].tasks[:-1]
@@ -128,20 +215,15 @@ if __name__ == "__main__":
     machines[1].tasks = machines[1].tasks[:-1]
     machines[2].tasks.insert(0, machines[2].tasks[-1])
     machines[2].tasks = machines[2].tasks[:-1]
-
-
-    '''
+    
     # Assegnamento di prova per valutare condizione erronea
     machines[1].tasks[0], machines[1].tasks[1] = machines[1].tasks[1], machines[1].tasks[0]
     machines[1].tasks[1], machines[1].tasks[2] = machines[1].tasks[2], machines[1].tasks[1]
     '''
 
+    # for m in machines: m.randomTasks()
     for m in machines: m.updateRefTasks()
     for m in machines: print(m)
-
-
-    #for m in machines:
-    #    m.randomTasks()
 
     initial_solution = Solution(machines)
 
@@ -163,16 +245,23 @@ if __name__ == "__main__":
     ## nuova soluzione applicando la best move
     solution_new = initial_solution.generateNeighbor(best_move)
 
-    print("-- GENERAZIONE DEL MIGLIOR VICINATO: ")
+    print("-- GENERAZIONE DEL MIGLIOR VICINO: ")
     printSolution(solution_new)
 
     print("Tabu List: ")
     print(tabu_list)
 
+    ## ricerca soluzione migliore con tabu search
+    tabu_list = Tabu_List()
+    opt_nowicki_solution = tabuSearchAlgorithmNowicki(initial_solution, tabu_list)
+
+    print("-- SOLUZIONE OTTIMA CON TABU NOWICKI: ")
+    printSolution(opt_nowicki_solution)
+
 
     ## ricerca soluzione migliore con tabu search
     tabu_list = Tabu_List()
-    opt_solution = tabuSearchAlgorithm(initial_solution, tabu_list)
+    opt_solution = tabuSearch((len(jobs_list) * len(machines))**2, initial_solution, tabu_list)
 
     print("-- SOLUZIONE OTTIMA CON TABU SEARCH: ")
     printSolution(opt_solution)
