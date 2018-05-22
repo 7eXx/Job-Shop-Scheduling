@@ -70,13 +70,11 @@ def analyzeDeleteLoop(machines):
 
         # Se trovo un ciclo lo elimino tramite procedura deleteLoop
         if c_cycle:
-            print("ciclo trovato \n")
             deleteLoop(visited, exchanged_set)
 
         # Se dopo aver cercato in ogni macchina non ci sono cicli allora termino la ricerca
         else:
             loop = False
-            print("nessun ciclo trovato \n")
 
 
 # Funzione restituisce tutti i critical path da una lista di tasks che hanno makespan maggiore

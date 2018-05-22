@@ -67,6 +67,6 @@ class Tabu_List:
         stringa = "["
         for m in self.moves:
             stringa += str(m)
-        stringa += "]"
+        stringa += "]\n"
 
         return stringa
