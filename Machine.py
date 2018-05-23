@@ -34,6 +34,7 @@ class Machine:
 
         self.tasks.append(t)
 
+    # aggiunge un task e aggiorna il riferimento a quello precedente
     def addSimpleTask(self,t):
 
         t.setMachine(self)

@@ -104,8 +104,6 @@ class Solution:
         return u_moves
 
     ##
-
-
     def makeSpan(self):
         return self.makespan
 

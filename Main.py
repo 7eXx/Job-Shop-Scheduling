@@ -168,8 +168,8 @@ if __name__ == "__main__":
                              [1, 0, 3, 2],
                              [0, 1, 3]]
 
-    ## esempio maggiore 4x3
     '''
+    ## esempio maggiore 4x3
     n_macchine = 3
     n_jobs = 3
     jobs_times = [[3, 2, 2],
@@ -199,8 +199,8 @@ if __name__ == "__main__":
             ## assegnazionio dei job alle macchine in relazione al vettore di assegnamento
             machines[assegnamento_macchine[j][i]].addSimpleTask(jobs_list[j].tasks[i])
 
-    ## secondo esempio 4x3
     '''
+    ## secondo esempio 4x3
     machines[0].tasks[0], machines[0].tasks[1], machines[0].tasks[2] = machines[0].tasks[1], machines[0].tasks[2], machines[0].tasks[0]
     machines[1].tasks[0], machines[1].tasks[1], machines[1].tasks[2] = machines[1].tasks[1], machines[1].tasks[2], machines[1].tasks[0]
     machines[2].tasks[0], machines[2].tasks[1] = machines[2].tasks[0], machines[2].tasks[1]
