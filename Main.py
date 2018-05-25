@@ -54,21 +54,21 @@ def neighborSearchProcedure(solution, tabu_list):
 
 def tabuSearchAlgorithmNowicki(solution, tabu_list):
 
-    MAX_ITER = 5
+    MAX_ITER = 10
     iter = 0
     ## imposta soluzione ricevuta come ottima
     opt_solution = solution
 
-    while len(opt_solution.moves) > 0 and iter < MAX_ITER:
+    while len(solution.moves) > 0 and iter < MAX_ITER:
 
         ## applicazione NSP
-        best_move, tabu_list = neighborSearchProcedure(opt_solution, tabu_list)
+        best_move, tabu_list = neighborSearchProcedure(solution, tabu_list)
         ## crea la nuova soluzione
-        new_solution = opt_solution.generateNeighbor(best_move)
+        solution = solution.generateNeighbor(best_move)
         # se il makespan della nuova soluzione è migliore di quella ottima
-        if new_solution.makespan < opt_solution.makespan:
+        if solution.makespan < opt_solution.makespan:
             ## aggiornamento della soluzione
-            opt_solution = new_solution
+            opt_solution = solution
             ## iteratore viene riportato a 0
             iter = 0
         else:
