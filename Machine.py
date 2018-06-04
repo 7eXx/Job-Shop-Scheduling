@@ -13,6 +13,17 @@ class Machine:
 
         ## TODO calcolare i tempi finali
 
+    # calcola il livello di
+    def machineLoad(self):
+
+        load = 0
+        # per tutti i task della macchina
+        for t in self.tasks:
+            load += t.executionTime
+
+        return load
+
+
     ## metodo per aggiungere un task alla macchina
     ## in questo modo si assegna un ordinamento alle operazioni sulla macchina
     def addTask(self, t):
